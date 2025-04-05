@@ -1,5 +1,6 @@
 pipeline {
     agent any
+
     environment {
         AZURE_CREDENTIALS_ID = 'azure-react-service-principal'
         RESOURCE_GROUP = 'rg-integrated-terraform'
@@ -21,9 +22,9 @@ pipeline {
             }
         }
 
-        stage("Terraform Setup") {
+        stage('Terraform Setup') {
             steps {
-                dir("terraform676") {
+                dir('terraform676') {
                     bat 'terraform init'
                     bat 'terraform plan -out=tfplan'
                     bat 'terraform apply -auto-approve tfplan'
@@ -33,27 +34,29 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                dir("my-app"){
+                dir('my-app') {
                     bat 'npm install'
-                }    
+                }
             }
         }
+
         stage('Install BestZip') {
-          steps {
-             bat 'npm install -g bestzip'
-           }
+            steps {
+                bat 'npm install -g bestzip'
+            }
         }
 
         stage('Build React App') {
             steps {
-                dir("my-app"){
+                dir('my-app') {
                     bat 'npm run build'
                 }
             }
         }
-       stage('Verify Build Output') {
+
+        stage('Verify Build Output') {
             steps {
-                dir("my-app/build") {
+                dir('my-app/build') {
                     bat 'dir'
                 }
             }
@@ -61,18 +64,19 @@ pipeline {
 
         stage('Deploy to Azure') {
             steps {
-                dir("my-app"){
+                dir('my-app') {
                     withCredentials([azureServicePrincipal(credentialsId: AZURE_CREDENTIALS_ID)]) {
-                        bat "az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%"
-                       // Clean old zip
-                        // Clean old zip if it exists
+                        bat 'az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%'
+
+                        // Delete old zip if exists
                         bat 'IF EXIST build.zip DEL build.zip'
 
-                // Use bestzip to create build.zip including full static folder
-                       bat 'bestzip build.zip build\\**\\*'
+                        // Zip build folder using bestzip
+                        bat 'bestzip build.zip build\\**\\*'
 
-                // Deploy zip to Azure
-                       bat "az webapp deploy --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src-path build.zip --type zip"
+                        // Deploy zip to Azure Web App
+                        bat 'az webapp deploy --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src-path build.zip --type zip'
+                    }
                 }
             }
         }
@@ -87,3 +91,4 @@ pipeline {
         }
     }
 }
+
