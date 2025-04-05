@@ -59,14 +59,16 @@ pipeline {
                 dir("my-app"){
                     withCredentials([azureServicePrincipal(credentialsId: AZURE_CREDENTIALS_ID)]) {
                         bat "az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%"
-                         // Delete old zip if exists
+                       // Clean old zip
                         bat 'IF EXIST build.zip DEL build.zip'
 
-                        // Zip ONLY the CONTENTS of the build/ folder (not the folder itself!)
-                        bat 'powershell -Command "Compress-Archive -Path build\\* -DestinationPath build.zip -Force"'
+                       // ZIP CONTENTS of build/ from inside the folder (this fixes static/ issue!)
+                       dir("build") {
+                          bat 'powershell -Command "Compress-Archive -Path * -DestinationPath ../build.zip -Force"'
+                        }
 
-                        // Deploy the zip to Azure App Service
-                        bat "az webapp deploy --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src-path build.zip --type zip"
+                // Deploy zip to Azure
+                       bat "az webapp deploy --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src-path build.zip --type zip"
                     }
                 }
             }
