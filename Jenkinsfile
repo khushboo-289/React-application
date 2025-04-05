@@ -9,13 +9,13 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'master', url: 'https://github.com/khushboo-289/Integrated-dotnet-app.git'
+                git branch: 'master', url: 'https://github.com/khushboo-289/React-application.git'
             }
         }
 
         stage('Test Terraform') {
             steps {
-                dir('terraform323') {
+                dir('terraform676') {
                     bat 'terraform --version'
                 }
             }
@@ -23,7 +23,7 @@ pipeline {
 
         stage("Terraform Setup") {
             steps {
-                dir("terraform323") {
+                dir("terraform676") {
                     bat 'terraform init'
                     bat 'terraform plan -out=tfplan'
                     bat 'terraform apply -auto-approve tfplan'
