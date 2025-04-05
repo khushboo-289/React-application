@@ -27,7 +27,7 @@ resource "azurerm_app_service" "my-app_service" {
 
 
   site_config {
-  linux_fx_version = "NODE|20-lts"  # or your desired Node.js version
+  linux_fx_version = "NODE|20"  # or your desired Node.js version
   scm_type         = "LocalGit"     # or "GitHub" / "VSTSRM" / "None" etc.
 }
 
