@@ -38,6 +38,11 @@ pipeline {
                 }    
             }
         }
+        stage('Install BestZip') {
+          steps {
+             bat 'npm install -g bestzip'
+           }
+        }
 
         stage('Build React App') {
             steps {
@@ -60,16 +65,14 @@ pipeline {
                     withCredentials([azureServicePrincipal(credentialsId: AZURE_CREDENTIALS_ID)]) {
                         bat "az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%"
                        // Clean old zip
+                        // Clean old zip if it exists
                         bat 'IF EXIST build.zip DEL build.zip'
 
-                       // ZIP CONTENTS of build/ from inside the folder (this fixes static/ issue!)
-                       dir("build") {
-                          bat 'powershell -Command "Compress-Archive -Path * -DestinationPath ../build.zip -Force"'
-                        }
+                // Use bestzip to create build.zip including full static folder
+                       bat 'bestzip build.zip build\\**\\*'
 
                 // Deploy zip to Azure
                        bat "az webapp deploy --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src-path build.zip --type zip"
-                    }
                 }
             }
         }
