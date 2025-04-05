@@ -52,11 +52,13 @@ pipeline {
                 dir("my-app"){
                     withCredentials([azureServicePrincipal(credentialsId: AZURE_CREDENTIALS_ID)]) {
                         bat "az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%"
-                        powershell '''
-                            Remove-Item build.zip -Force -ErrorAction SilentlyContinue
-                            Compress-Archive -Path build\\* -DestinationPath build.zip -Force
-                         '''
-                        bat "az webapp deployment source config-zip --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src build.zip"
+                        bat 'del build.zip'
+
+                // Navigate into build folder and compress contents ONLY
+                        bat 'powershell -Command "Compress-Archive -Path build\\* -DestinationPath build.zip -Force"'
+
+                // Deploy the zip to Azure App Service
+                        bat "az webapp deploy --resource-group %RESOURCE_GROUP% --name %APP_SERVICE_NAME% --src-path build.zip --type zip"
                     }
                 }
             }
