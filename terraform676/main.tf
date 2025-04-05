@@ -12,6 +12,8 @@ resource "azurerm_app_service_plan" "app_service_plan" {
   name                = "khushapp_service_plan"
   location            = azurerm_resource_group.rgas.location
   resource_group_name = azurerm_resource_group.rgas.name
+  kind                = "Linux"
+  reserved            = true
 
   sku {
     tier = "Basic"
