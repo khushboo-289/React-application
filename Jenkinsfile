@@ -40,24 +40,10 @@ pipeline {
             }
         }
 
-        stage('Install BestZip') {
-            steps {
-                bat 'npm install -g bestzip'
-            }
-        }
-
         stage('Build React App') {
             steps {
                 dir('my-app') {
                     bat 'npm run build'
-                }
-            }
-        }
-
-        stage('Verify Build Output') {
-            steps {
-                dir('my-app/build') {
-                    bat 'dir'
                 }
             }
         }
